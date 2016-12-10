@@ -77,7 +77,7 @@ io.on('connection', function(socket) {
 	
 });
 
-app.listen(5000);
+app.listen(process.env.PORT || 5000);
 
 
 var matrix = [ [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]];
