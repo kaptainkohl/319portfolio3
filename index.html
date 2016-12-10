@@ -1,0 +1,272 @@
+<!doctype html>
+<html>
+    <head>
+        <script src='/socket.io/socket.io.js'></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script>
+			
+			var player_num = 0;
+            var socket = io();
+
+            socket.on('welcome', function(data) {
+				console.log(data);
+                socket.emit('i am client', {data: data, id: data.id});
+				player_num = data;
+				if( data ==0)
+				{
+				document.getElementById('you').innerHTML="You are not in a game";
+				}
+				else
+				{
+				document.getElementById('you').innerHTML= "You are Player "+data;
+				}
+            });
+			socket.on('waiting',  function(data) {
+               player_turn= 0;
+            });
+			socket.on('start',  function(data) {
+               player_turn= 1;
+			   
+            });
+			socket.on('full',  function(data) {
+               player_turn= -1;
+			   document.getElementById('turn').innerHTML= "This Game is Full.";
+            });			
+            socket.on('error', console.error.bind(console));
+			
+			socket.on('board_state',  function(data) {
+               board_matrix = data;
+			   update();
+            });
+			socket.on('player_turn',  function(data) {
+               player_turn= data;
+			   console.log("Turn player: "+ data);
+			   document.getElementById('turn').innerHTML= "It is  Player "+data+"'s Turn";
+            });
+			socket.on('color_change',  function(data) {
+			player1color = data.p1;
+			player2color = data.p2;
+            });
+			socket.on('winner',  function(data) {
+				player_turn= -1;
+				alert("Player "+data+" Wins!");
+				document.getElementById('turn').innerHTML= "Player "+data+" Wins!";
+				setTimeout(reset,3000);
+            });
+            function addMessage(message) {
+                var text = document.createTextNode(message),
+                    el = document.createElement('li'),
+                    messages = document.getElementById('messages');
+
+                el.appendChild(text);
+                messages.appendChild(el);
+            }
+        </script>
+    </head>
+<style>
+*{ margin:0; padding:0; }
+
+body{
+  width: 100%;
+  height: 100%;
+  overflow:hidden;
+}
+
+.canvas {
+ display:block;
+}
+.game{
+position: fixed;
+    top: 0;
+    right: 0;
+
+}
+ </style>
+<div class="game">
+<h1>
+Connect Four!
+<br>
+
+</h1>
+
+<p id ="you">You are not in a Game</p>
+
+Your Color : 
+<select id="p1color" name="player1" onchange="socket.emit('color_pick',{data: this.value, id:player_num });">
+  <option value="red">Red</option>  
+  <option value="green">Green</option>
+  <option value="black">Black</option>
+  <option value="pink">Pink</option>  
+  <option value="Purple">Purple</option>
+  
+  
+</select>
+
+
+<p id ="turn">It is  Player 1's Turn</p>
+<input id="Join" style="width:570px" type="button" value="Join" onclick="socket.emit('join',player_num );"  />
+</div>
+<body>
+
+
+
+<script>  
+var player1color = 'red';
+var player2color = 'yellow';
+var player_turn = -2;
+var board_matrix = [ [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]];;
+var pointer =0;
+
+$(document).ready( function() {
+board.start();
+});
+
+function place(col)
+{
+	if(player_num == player_turn)
+	{
+	socket.emit('place', col);
+	}
+
+
+}
+
+function reset()
+{
+socket.emit('reset_game', "reset");
+
+}
+
+
+function draw_new_Board(matrix){
+
+	for(var r = 0; r<6;r++)
+	{
+		for(var c = 0; c<7;c++)
+		{
+			if (matrix[r][c] == 0) 
+			{
+				draw_block(c *100 +100,r *100 +100,'white');
+				//document.getElementById('cell'+(r+1)+''+(c+1)).style.backgroundColor='white';
+			}
+			if (matrix[r][c] == 1) 
+			{
+				draw_block(c *100 +100,r *100 +100,player1color);
+				//document.getElementById('cell'+(r+1)+''+(c+1)).style.backgroundColor=player1color;
+			}
+			if (matrix[r][c] == 2) 
+			{
+				draw_block(c *100 +100,r *100 +100,player2color );
+				//document.getElementById('cell'+(r+1)+''+(c+1)).style.backgroundColor=player2color;
+			}
+		}		
+	}  
+
+}
+
+
+document.addEventListener('keydown', function(event) {
+
+	//space
+	if(event.keyCode == 32) {
+        place(pointer);
+    }
+	//right
+	if(event.keyCode == 39) {
+        pointer+=1;
+		 
+		if(pointer>6)
+		{
+		pointer=0;
+		}
+    }
+	//left
+	if(event.keyCode == 37) {
+        pointer-=1;
+		if(pointer<0)
+		{
+		pointer=6;
+		}
+    }
+
+	update();
+  //document.getElementById('arrow').style.left= ((pointer+1) * 82)-62 + "px";
+});
+
+var board = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 1000;
+        this.canvas.height = 800;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+		update();
+		
+    },
+    stop : function() {
+        clearInterval(this.interval);
+    },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		
+		for (var i = 0; i < 8; i++) {
+            this.context.strokeStyle= '#b2b2b2';
+            this.context.moveTo(i * 100 + 100, 100);
+            this.context.lineTo(i * 100 + 100, 7 * 100);
+            this.context.stroke();
+            
+        }
+		for (var i = 0; i < 7; i++) {
+            this.context.strokeStyle= '#b2b2b2';
+			this.context.moveTo(100, i * 100 + 100);
+            this.context.lineTo(8 * 100, i * 100 + 100);
+            this.context.stroke();
+            
+        }
+
+		
+		
+    }
+}
+
+
+function update(){
+board.clear();
+draw_new_Board(board_matrix);
+if(player_num==1 || player_num==2)
+{
+draw_cursor();
+}
+
+
+
+
+}
+
+function draw_cursor()
+{
+	
+	ctx = board.context;
+	ctx.save();
+    ctx.fillStyle = 'blue';
+    ctx.fillRect( 100+ 100 * pointer ,  10  , 100, 100);
+    ctx.restore();
+
+}
+function draw_block(x,y,color)
+{
+	
+	ctx = board.context;
+	ctx.save();
+    ctx.fillStyle = color;
+    ctx.fillRect( x+1 ,  y+1 , 98, 98);
+    ctx.restore();
+
+}
+
+</script>
+
+        <ul id='messages'></ul>
+    </body>
+</html>
