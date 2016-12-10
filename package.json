@@ -1,0 +1,21 @@
+{
+  "name": "319portfolio3",
+  "version": "0.2.5",
+  "description": "Connect Four",
+  "engines": {
+    "node": "6.9.2"
+  },
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaptainkohl/319portfolio3"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ]
+}
