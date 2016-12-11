@@ -54,6 +54,9 @@
 			player1color = data.p1;
 			player2color = data.p2;
             });
+			socket.on('left',  function(data) {
+				alert("Player has left the game, reseting");
+            });
 			//when a player has won
 			socket.on('winner',  function(data) {
 				player_turn= -1;

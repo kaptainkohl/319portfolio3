@@ -75,7 +75,9 @@ io.on('connection', function(socket) {
 	//when someone leaves let another person join
 	socket.on('disconnect', function() {
       console.log('Got disconnect!');
-	  //playernum =2;
+		io.emit('left', 0 );
+		playernum = 1;
+		io.emit('welcome', 0 );
 	});
 	
 });
