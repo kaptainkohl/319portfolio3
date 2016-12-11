@@ -176,6 +176,10 @@ document.addEventListener('keydown', function(event) {
 	if(event.keyCode == 32) {
         place(pointer);
     }
+	if(event.keyCode == 65) {
+        player_turn= -1;
+		reset();
+    }
 	//right
 	if(event.keyCode == 39) {
         pointer+=1;
