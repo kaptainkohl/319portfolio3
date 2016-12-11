@@ -7,7 +7,7 @@
 			
 			var player_num = 0;
             var socket = io();
-
+			//when a user loads the webpage
             socket.on('welcome', function(data) {
 				console.log(data);
                 socket.emit('i am client', {data: data, id: data.id});
@@ -21,32 +21,40 @@
 				document.getElementById('you').innerHTML= "You are Player "+data;
 				}
             });
+			//if player is waiting for another player
 			socket.on('waiting',  function(data) {
                player_turn= 0;
             });
+			//when there are 2 people in a game
 			socket.on('start',  function(data) {
                player_turn= 1;
 			   
             });
+			//when a game is full
 			socket.on('full',  function(data) {
                player_turn= -1;
 			   document.getElementById('turn').innerHTML= "This Game is Full.";
-            });			
+            });	
+			
             socket.on('error', console.error.bind(console));
 			
+			//when a new board state is sent
 			socket.on('board_state',  function(data) {
                board_matrix = data;
 			   update();
             });
+			//when is a new players turn
 			socket.on('player_turn',  function(data) {
                player_turn= data;
 			   console.log("Turn player: "+ data);
 			   document.getElementById('turn').innerHTML= "It is  Player "+data+"'s Turn";
             });
+			//when a color is changed
 			socket.on('color_change',  function(data) {
 			player1color = data.p1;
 			player2color = data.p2;
             });
+			//when a player has won
 			socket.on('winner',  function(data) {
 				player_turn= -1;
 				alert("Player "+data+" Wins!");
@@ -120,7 +128,7 @@ var pointer =0;
 $(document).ready( function() {
 board.start();
 });
-
+//send place piece
 function place(col)
 {
 	if(player_num == player_turn)
@@ -130,14 +138,14 @@ function place(col)
 
 
 }
-
+//sent reset
 function reset()
 {
 socket.emit('reset_game', "reset");
 
 }
 
-
+//draw the board
 function draw_new_Board(matrix){
 
 	for(var r = 0; r<6;r++)
@@ -147,24 +155,21 @@ function draw_new_Board(matrix){
 			if (matrix[r][c] == 0) 
 			{
 				draw_block(c *100 +100,r *100 +100,'white');
-				//document.getElementById('cell'+(r+1)+''+(c+1)).style.backgroundColor='white';
 			}
 			if (matrix[r][c] == 1) 
 			{
 				draw_block(c *100 +100,r *100 +100,player1color);
-				//document.getElementById('cell'+(r+1)+''+(c+1)).style.backgroundColor=player1color;
 			}
 			if (matrix[r][c] == 2) 
 			{
 				draw_block(c *100 +100,r *100 +100,player2color );
-				//document.getElementById('cell'+(r+1)+''+(c+1)).style.backgroundColor=player2color;
 			}
 		}		
 	}  
 
 }
 
-
+//keayboard listen
 document.addEventListener('keydown', function(event) {
 
 	//space
@@ -190,9 +195,8 @@ document.addEventListener('keydown', function(event) {
     }
 
 	update();
-  //document.getElementById('arrow').style.left= ((pointer+1) * 82)-62 + "px";
 });
-
+//canvas drawing
 var board = {
     canvas : document.createElement("canvas"),
     start : function() {
@@ -238,10 +242,6 @@ if(player_num==1 || player_num==2)
 {
 draw_cursor();
 }
-
-
-
-
 }
 
 function draw_cursor()

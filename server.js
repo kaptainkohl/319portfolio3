@@ -8,21 +8,19 @@ var app = http.createServer(function(req, res) {
     res.end(index);
 });
 
-// Socket.io server listens to our app
 var io = require('socket.io').listen(app);
 
 
 var playernum = 1;
 
-// Emit welcome message on connection
 io.on('connection', function(socket) {
-    // Use socket to communicate with this particular client only, sending it it's own id
+    // connection with only 1 client
     
-	
+	//when a client connects to the server
     socket.on('i am client',  function(data) {
 		console.log(data);
 	});
-	
+	//when a player presses join
 	socket.on('join',  function(data) {
 		//console.log(data);
 		if( data !=2 &&data!=1)
@@ -52,12 +50,12 @@ io.on('connection', function(socket) {
 		}
 		
 	});
-	
+	//when the game is over
 	socket.on('reset_game', function(data) {
 		playernum = 1;
 		io.emit('welcome', 0 );
 	});
-	
+	//on color change
 	socket.on('color_pick', function(data) {
 		if (data.id == 1)
 		{
@@ -70,16 +68,21 @@ io.on('connection', function(socket) {
 		io.emit('color_change', {p1 : player1color, p2 : player2color});
 		io.emit('board_state', matrix);
 	});
-
+	//when a piece is placed
 	socket.on('place', function(data) {
 		button(data);
 	});	
+	//when someone leaves let another person join
+	socket.on('disconnect', function() {
+      console.log('Got disconnect!');
+	  playernum =1;
+	});
 	
 });
-
+//listen on heroku's port or on a localhost port 5000
 app.listen(process.env.PORT || 5000);
 
-
+//game vars
 var matrix = [ [0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]];
 var turn= 1;
 var player1color = "red";
@@ -89,7 +92,7 @@ var GAMEMODE = "p1";
 var winner=0;
 
 
-
+//reset the game for everyone
 function initMatrix()
 {
 	turn= 1;
@@ -105,7 +108,7 @@ function initMatrix()
 	io.emit('player_turn', turn);
 }
 
-
+//placing pieces on the board
 function button(col)
 {
 	for(var r = 5; r>-1;r--)
@@ -146,7 +149,7 @@ function button(col)
 }
 
 
-
+// see if someone has won.
 function Winning_Algorithm() {
 	for (var i = 0; i < 6; i++) {
 		for (var j = 0; j < 7; j++) {
